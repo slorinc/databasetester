@@ -1,5 +1,6 @@
 package com.avinode.databasetester.controllers;
 
+import com.avinode.databasetester.beans.AjaxBean;
 import com.avinode.databasetester.dto.FormDTO;
 import com.avinode.databasetester.dto.FormDTOBuilder;
 import com.avinode.databasetester.dto.QueryResult;
@@ -7,6 +8,7 @@ import com.avinode.databasetester.services.DatabaseQueryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
+import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import javax.sql.DataSource;
 import javax.validation.Valid;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 /**
  * DatabaseTesterController
@@ -31,6 +35,9 @@ public class DatabaseTesterController {
 
     @Autowired
     private DatabaseQueryService databaseQueryService;
+
+    @Autowired
+    private AjaxBean ajaxBean;
 
     @Value("${spring.datasource.driver-class-name}")
     private String driverClassName;
@@ -56,7 +63,7 @@ public class DatabaseTesterController {
     }
 
     @RequestMapping(value = "post", method = RequestMethod.POST)
-    public String handleFromPost(@Valid @ModelAttribute FormDTO formDTO, BindingResult bindingResult, Model model) {
+    public String handleFormPost(@Valid @ModelAttribute FormDTO formDTO, BindingResult bindingResult, Model model) {
 
         if (bindingResult.hasErrors()) {
             return "form";
@@ -72,11 +79,21 @@ public class DatabaseTesterController {
         JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
         jdbcTemplate.setSkipResultsProcessing(true);
 
-        QueryResult queryResult = databaseQueryService.executeQuery(jdbcTemplate, formDTO.getNumberOfTimes(), formDTO.getSqlStatement());
-
-        model.addAttribute("executionTime", queryResult.getExecutionTime());
-        model.addAttribute("errorList", queryResult.getErrorList());
+        Future<QueryResult> queryResult = databaseQueryService.executeQuery(jdbcTemplate, formDTO.getNumberOfTimes(), formDTO.getSqlStatement());
+        try {
+            model.addAttribute("executionTime", queryResult.get().getExecutionTime());
+            model.addAttribute("errorList", queryResult.get().getErrorList());
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
         return "form";
+    }
+
+    @RequestMapping(value = "ajax")
+    public ResponseEntity<Integer> ajaxCounter() {
+        return ResponseEntity.ok(ajaxBean.getCounter());
     }
 
 }

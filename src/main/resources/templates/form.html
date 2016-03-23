@@ -39,6 +39,8 @@
 <br/>
 <button th:if="(${errorList!=null} and ${errorList.size()>0})" th:id="errorButton">Error List</button>
 
+<div id="counter" style="display: none">0</div>
+
 <ul id="errorList" style="display: none">
     <li th:each="error : ${errorList}" th:text="${error}" />
 </ul>
