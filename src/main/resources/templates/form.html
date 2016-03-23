@@ -1,0 +1,70 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Database Test</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <script src="https://code.jquery.com/jquery-2.2.2.min.js"
+            integrity="sha256-36cp2Co+/62rEAAYHLmRCPIych47CvdM+uTBJwSzWjI=" crossorigin="anonymous"></script>
+</head>
+<style>
+    .fieldError {
+        color: white;
+        background: indianred;
+        border-radius: 25px;
+        padding: 10px;
+    }
+
+    .fieldResultSuccess {
+        color: white;
+        background: darkgreen;
+        border-radius: 15px;
+        padding: 10px;
+    }
+
+    .fieldResultError {
+        color: white;
+        background: darkred;
+        border-radius: 15px;
+        padding: 10px;
+    }
+</style>
+<body>
+<h1>Database Test</h1>
+
+<span th:if="${errorList!=null}"
+      th:text="${'SQL query finished with ' + errorList.size() + ' errors in ' + executionTime + ' ms.'}"
+      th:class="(${errorList!=null} and ${errorList.size()==0})?'fieldResultSuccess':'fieldResultError'"/>
+<br/>
+<br/>
+<br/>
+<button th:if="(${errorList!=null} and ${errorList.size()>0})" th:id="errorButton">Error List</button>
+
+<ul id="errorList" style="display: none">
+    <li th:each="error : ${errorList}" th:text="${error}" />
+</ul>
+
+<form action="#" th:action="@{/internal/testing/post}" th:object="${formDTO}" method="post">
+
+    <p>datasourceUrl: <input type="text" th:field="*{datasourceUrl} " size="100"/></p>
+    <span th:if="${#fields.hasErrors('datasourceUrl')}" th:errors="*{datasourceUrl}" th:errorclass="fieldError"/>
+
+    <p>datasourceUsername: <input type="text" th:field="*{datasourceUsername}" size="35"/></p>
+    <span th:if="${#fields.hasErrors('datasourceUsername')}" th:errors="*{datasourceUsername}"
+          th:errorclass="fieldError"/>
+
+    <p>datasourcePassword: <input type="text" th:field="*{datasourcePassword}" size="35"/></p>
+    <span th:if="${#fields.hasErrors('datasourcePassword')}" th:errors="*{datasourcePassword}"
+          th:errorclass="fieldError"/>
+
+    <p>sqlStatement: <input type="text" th:field="*{sqlStatement}" size="35"/></p>
+    <span th:if="${#fields.hasErrors('sqlStatement')}" th:errors="*{sqlStatement}" th:errorclass="fieldError"/>
+
+    <p>numberOfTimes: <input type="text" th:field="*{numberOfTimes}"/></p>
+    <span th:if="${#fields.hasErrors('numberOfTimes')}" th:errors="*{numberOfTimes}" th:errorclass="fieldError"/>
+
+    <p><input type="submit" value="Submit"/> <input type="reset" value="Reset"/></p>
+
+</form>
+<script th:src="@{/js/scripts.js}"/>
+</body>
+</html>
